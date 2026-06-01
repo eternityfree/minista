@@ -22,6 +22,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # Options
 # ============================================================
 option(MINISTA_BUILD_TESTS "Build unit tests" ON)
+option(MINISTA_BUILD_PYTHON "Build Python bindings" ON)
 
 # ============================================================
 # Include FetchContent module
@@ -100,12 +101,25 @@ endif()
 # ============================================================
 FetchContent_Declare(
     googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_REPOSITORY https://gitee.com/mirrors/googletest.git
     GIT_TAG        v1.14.0
 )
 # Prevent GTest from overriding compiler/linker options on Windows
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+
+# ============================================================
+# Dependency: pybind11
+# ============================================================
+if(MINISTA_BUILD_PYTHON)
+    find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+    FetchContent_Declare(
+        pybind11
+        GIT_REPOSITORY https://gitee.com/mirrors/pybind11.git
+        GIT_TAG        v2.12.0
+    )
+    FetchContent_MakeAvailable(pybind11)
+endif()
 
 # ============================================================
 # Project Targets
@@ -115,4 +129,8 @@ add_subdirectory(src)
 if(MINISTA_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(MINISTA_BUILD_PYTHON)
+    add_subdirectory(python)
 endif()

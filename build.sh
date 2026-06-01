@@ -3,10 +3,12 @@
 # build.sh — MiniSTA build script
 # ============================================================
 # Usage:
-#   ./build.sh          # Build project
+#   ./build.sh          # Build project (C++ + Python)
 #   ./build.sh clean    # Clean build directory
 #   ./build.sh test     # Build and run tests
 #   ./build.sh rebuild  # Clean + build
+#   ./build.sh python   # Build only Python bindings
+#   ./build.sh help     # Show this help
 # ============================================================
 
 set -e  # Exit on error
@@ -14,6 +16,7 @@ set -e  # Exit on error
 PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BUILD_DIR="${PROJECT_DIR}/build"
 BIN_DIR="${PROJECT_DIR}/bin"
+PYTHON_BIN_DIR="${BIN_DIR}/python"
 
 # Colors for output
 RED='\033[0;31m'
@@ -51,7 +54,16 @@ do_configure() {
 do_build() {
     print_info "Building MiniSTA..."
     cmake --build "${BUILD_DIR}" -j$(nproc)
-    print_info "Build complete. Binaries in: ${BIN_DIR}/"
+    print_info "Build complete."
+    print_info "  C++ binary:  ${BIN_DIR}/minista"
+    print_info "  Python lib:  ${PYTHON_BIN_DIR}/minista.so"
+}
+
+do_build_python() {
+    print_info "Building Python bindings only..."
+    cmake -S "${PROJECT_DIR}" -B "${BUILD_DIR}" -DMINISTA_BUILD_TESTS=OFF
+    cmake --build "${BUILD_DIR}" --target minista_py -j$(nproc)
+    print_info "Python binding built: ${PYTHON_BIN_DIR}/minista.so"
 }
 
 do_test() {
@@ -64,10 +76,11 @@ show_usage() {
     echo "Usage: $0 [command]"
     echo ""
     echo "Commands:"
-    echo "  (none)    Build project"
+    echo "  (none)    Build project (C++ + Python)"
     echo "  clean     Remove build directory"
     echo "  test      Build and run tests"
     echo "  rebuild   Clean + build"
+    echo "  python    Build Python bindings only"
     echo "  help      Show this help"
 }
 
@@ -90,6 +103,9 @@ case "${1:-}" in
         do_clean
         do_configure
         do_build
+        ;;
+    python)
+        do_build_python
         ;;
     help|--help|-h)
         show_usage
