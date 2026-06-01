@@ -1,0 +1,14 @@
+# simple_design.net — Simple counter design
+# 3 registers connected in a chain
+
+# Clock definition
+CLOCK clk period=10.0 skew=0.1
+
+# Registers
+CELL reg1 DFF tcq=0.5 tsetup=0.2 thold=0.1
+CELL reg2 DFF tcq=0.5 tsetup=0.2 thold=0.1
+CELL reg3 DFF tcq=0.5 tsetup=0.2 thold=0.1
+
+# Data paths
+NET net1 FROM reg1/Q TO reg2/D delay=3.0
+NET net2 FROM reg2/Q TO reg3/D delay=2.5
