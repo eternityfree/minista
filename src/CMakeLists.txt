@@ -1,28 +1,41 @@
 # ============================================================
-# src/CMakeLists.txt — MiniSTA main executable
+# src/CMakeLists.txt — MiniSTA core library and main executable
 # ============================================================
 
-# Collect source files (will grow as modules are implemented)
-set(MINISTA_SOURCES
-    main.cpp
+# Core library (shared between Tcl shell and Python bindings)
+add_library(minista_core STATIC
+    core/sta_engine.cpp
 )
 
-# Create the main executable
-add_executable(minista ${MINISTA_SOURCES})
+# Required for Python shared library linking
+set_target_properties(minista_core PROPERTIES
+    POSITION_INDEPENDENT_CODE ON
+)
 
-# Set include paths
+target_include_directories(minista_core
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/src
+)
+
+target_compile_options(minista_core PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
+    $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic>
+)
+
+# Main executable (Tcl shell)
+add_executable(minista main.cpp)
+
 target_include_directories(minista
     PRIVATE
         ${CMAKE_SOURCE_DIR}/include
 )
 
-# Link dependencies
 target_link_libraries(minista
     PRIVATE
         Tcl::tcl
+        minista_core
 )
 
-# Compiler-specific options
 target_compile_options(minista PRIVATE
     $<$<CXX_COMPILER_ID:GNU>:-Wall -Wextra -Wpedantic>
     $<$<CXX_COMPILER_ID:Clang>:-Wall -Wextra -Wpedantic>
