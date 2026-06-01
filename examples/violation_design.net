@@ -1,0 +1,12 @@
+# violation_design.net — Design with timing violations
+# Path with setup violation (delay too long)
+
+# Clock definition
+CLOCK clk period=5.0 skew=0.0
+
+# Registers
+CELL reg1 DFF tcq=0.5 tsetup=0.2 thold=0.1
+CELL reg2 DFF tcq=0.5 tsetup=0.2 thold=0.1
+
+# Data path with long delay (will cause setup violation)
+NET slow_path FROM reg1/Q TO reg2/D delay=5.0

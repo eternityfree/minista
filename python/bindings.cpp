@@ -9,6 +9,7 @@
 #include <pybind11/stl.h>
 
 #include "core/sta_engine.h"
+#include "core/netlist_parser.h"
 
 namespace py = pybind11;
 using namespace minista::core;
@@ -210,4 +211,56 @@ Returns:
 
         // Utility
         .def("clear", &StaEngine::clear, "Clear all design data.");
+
+    // ============================================================
+    // ParseResult
+    // ============================================================
+    py::class_<ParseResult>(m, "ParseResult")
+        .def_readonly("success", &ParseResult::success)
+        .def_readonly("lines_parsed", &ParseResult::lines_parsed)
+        .def_readonly("clocks_created", &ParseResult::clocks_created)
+        .def_readonly("cells_created", &ParseResult::cells_created)
+        .def_readonly("nets_created", &ParseResult::nets_created)
+        .def_readonly("ports_created", &ParseResult::ports_created)
+        .def_readonly("errors", &ParseResult::errors)
+        .def("__repr__", [](const ParseResult& r) {
+            return "<ParseResult success=" + std::string(r.success ? "True" : "False") +
+                   " clocks=" + std::to_string(r.clocks_created) +
+                   " cells=" + std::to_string(r.cells_created) +
+                   " nets=" + std::to_string(r.nets_created) + ">";
+        });
+
+    // ============================================================
+    // NetlistParser
+    // ============================================================
+    py::class_<NetlistParser>(m, "NetlistParser")
+        .def(py::init<>(), R"(
+Create a new netlist parser instance.
+)")
+
+        .def("parse_file", &NetlistParser::parse_file,
+             py::arg("filename"), py::arg("engine"),
+             R"(
+Parse a .net file and populate the engine.
+
+Args:
+    filename (str): Path to the .net file.
+    engine (StaEngine): The STA engine to populate.
+
+Returns:
+    ParseResult: Parse result with statistics and errors.
+)")
+
+        .def("parse_string", &NetlistParser::parse_string,
+             py::arg("content"), py::arg("engine"),
+             R"(
+Parse a netlist string and populate the engine.
+
+Args:
+    content (str): Netlist content string.
+    engine (StaEngine): The STA engine to populate.
+
+Returns:
+    ParseResult: Parse result with statistics and errors.
+)");
 }
